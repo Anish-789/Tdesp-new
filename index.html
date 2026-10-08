@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>TD ESP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html{background:linear-gradient(160deg,#f3e8ff 0%,#e0f2fe 50%,#fce7f3 100%);background-attachment:fixed}
+  body{margin:0;background:transparent;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(70px);z-index:-1;pointer-events:none}
+  body::before{width:300px;height:300px;background:#c084fc;opacity:.5;top:-70px;left:-80px}
+  body::after{width:320px;height:320px;background:#60a5fa;opacity:.4;bottom:-90px;right:-90px}
+  input,select{background:rgba(255,255,255,.8)}
+  .cat-chip{flex:none;padding:9px 18px;border-radius:24px;font-size:13px;font-weight:700;color:#4b5563;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.9)}
+  .cat-chip.on{color:#fff;border-color:transparent;background:linear-gradient(270deg,#a855f7,#3b82f6,#ec4899,#a855f7);
+    background-size:300% 300%;animation:fluid 5s ease infinite}
+  #catRow::-webkit-scrollbar{display:none}
+  @keyframes fluid{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .fluid-btn{background:linear-gradient(270deg,#a855f7,#3b82f6,#ec4899,#a855f7);background-size:300% 300%;
+    animation:fluid 5s ease infinite;border-radius:24px;color:#fff;font-weight:700;border:0;transition:transform .1s ease}
+  .fluid-btn:active{transform:scale(.96)}
+  .glass{background:rgba(255,255,255,.55);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+    border-radius:24px;box-shadow:0 8px 32px rgba(80,40,160,.12);border:1px solid rgba(255,255,255,.85);transition:transform .1s ease}
+  button.glass:active{transform:scale(.97)}
+  .gtext{background:linear-gradient(135deg,#a855f7,#3b82f6,#ec4899);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  #splash{position:fixed;inset:0;z-index:100;background:#000;color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;transition:opacity .7s ease}
+  #splash.fade{opacity:0;pointer-events:none}
+  .ringbox{position:relative;width:130px;height:130px;display:flex;align-items:center;justify-content:center}
+  .ring{position:absolute;border-radius:50%;border:4px solid transparent;animation:spin 1.2s cubic-bezier(.6,.1,.4,.9) infinite}
+  .r1{width:130px;height:130px;border-bottom-color:#a855f7;border-left-color:#3b82f6}
+  .r2{width:96px;height:96px;border-bottom-color:#ec4899;animation-duration:1.6s}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .trophy{font-size:48px;filter:drop-shadow(0 0 18px #c084fc)}
+  .hide{display:none!important}
+  .nav-btn{flex:1;min-width:0;color:#9ca3af;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;padding:6px 4px}
+  .nav-btn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .nav-btn.on{color:#a855f7}
+  #toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:90;
+    background:rgba(0,0,0,.85);color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;max-width:90%;text-align:center}
+  input:focus{outline:none;box-shadow:0 0 0 2px #c084fc}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="ringbox">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="trophy">🏆</div>
+  </div>
+  <h1 class="gtext" style="margin:28px 0 0;font-size:46px;font-weight:900;letter-spacing:2px">TD ESP</h1>
+  <p style="margin:6px 0 0;font-size:13px;color:#9ca3af">premium tournaments</p>
+</div>
+
+<!-- NOTICE BANNER -->
+<div id="notice" class="text-center text-sm font-semibold text-gray-800 px-4 py-2 border-b border-gray-200"
+     style="background:rgba(255,255,255,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding-top:calc(8px + env(safe-area-inset-top))">
+  Welcome to TD ESP
+</div>
+
+<!-- HEADER -->
+<header class="flex items-center justify-between px-4 pt-3 pb-2">
+  <button id="balChip" class="glass flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-800">
+    <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="15" r="1.2"/></svg><span id="hBal">&#8377;0</span>
+  </button>
+  <div class="flex items-center gap-2">
+    <button id="histBtn" class="glass w-10 h-10 flex items-center justify-center" aria-label="History"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#4b5563;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button>
+    <button id="authBtn" class="fluid-btn px-5 py-2 text-sm">Sign in</button>
+  </div>
+</header>
+
+<!-- VIEWS -->
+<main class="px-4" style="padding-bottom:110px">
+
+  <section id="v-home">
+    <div id="catRow" class="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4" style="scrollbar-width:none">
+    </div>
+    <div class="glass p-2 mt-2">
+      <img id="hero" class="w-full h-36 object-cover" style="border-radius:18px"
+           src="https://placehold.co/800x300/8b5cf6/ffffff?text=CHAMPION+RUSH" alt="Promotion banner">
+    </div>
+    <div class="flex justify-between items-center mt-5 mb-2">
+      <h2 class="font-bold text-lg text-gray-800">Live matches</h2>
+      <span id="mCount" class="text-xs bg-gray-100 text-gray-500 px-3 py-1 rounded-full">0 matches</span>
+    </div>
+    <div id="matchList" class="space-y-4"></div>
+    <div id="noMatch" class="glass p-8 text-center text-sm text-gray-400">No matches yet. They will appear here.</div>
+    <div class="glass p-4 mt-5">
+      <h3 class="font-bold text-gray-800 mb-1">Fair play</h3>
+      <p class="text-xs text-gray-500 mb-3">Rules on hacks, emulators and slot unlocking.</p>
+      <button id="fpOpen" class="glass w-full py-3 font-semibold text-gray-700 text-sm">Read the rules</button>
+    </div>
+  </section>
+
+  <section id="v-mymatches" class="hide">
+    <h2 class="font-bold text-lg text-gray-800 mt-4 mb-2">My matches</h2>
+    <div id="myList" class="space-y-4"></div>
+    <div id="noMine" class="glass p-8 text-center text-sm text-gray-400">You have not joined any match yet.</div>
+  </section>
+
+  <section id="v-detail" class="hide">
+    <button id="dBack" class="glass px-4 py-2 text-sm font-semibold text-gray-700 mt-3">Back</button>
+    <img id="dImg" class="hide w-full h-40 object-cover mt-3" style="border-radius:24px" alt="Match photo">
+    <h2 id="dTitle" class="font-bold text-xl text-gray-800 mt-3"></h2>
+    <p id="dMeta" class="text-xs text-gray-500"></p>
+    <div class="glass p-4 mt-3">
+      <p class="text-xs text-gray-400">Room ID and password</p>
+      <p id="dRoom" class="font-bold text-gray-800 mt-1" style="white-space:pre-line"></p>
+    </div>
+    <div id="dTabs" class="flex gap-2 mt-4">
+      <button class="cat-chip on" data-t="prize">Prize pool</button>
+      <button class="cat-chip" data-t="players">Players</button>
+      <button class="cat-chip" data-t="rules">Rules</button>
+    </div>
+    <div id="dBody" class="glass p-4 mt-3 text-sm text-gray-700"></div>
+  </section>
+
+  <section id="v-wallet" class="hide">
+    <div class="glass p-6 mt-4 text-center">
+      <p class="text-sm text-gray-500">Balance</p>
+      <p id="wBal" class="text-4xl font-black text-gray-800 mt-1">&#8377;0</p>
+    </div>
+
+    <div class="glass p-4 mt-4">
+      <h3 class="font-bold text-gray-800 mb-2">Add money</h3>
+      <p class="text-xs text-gray-400 mb-3">Enter the amount, then pay on the next page.</p>
+      <input id="wAmt" type="number" inputmode="numeric" placeholder="Amount (minimum Rs 10)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-3">
+      <button id="wNext" class="fluid-btn w-full py-3">Continue</button>
+    </div>
+  </section>
+
+  <section id="v-pay" class="hide">
+    <button id="payBack" class="glass px-4 py-2 text-sm font-semibold text-gray-700 mt-3">Back</button>
+    <div class="glass p-6 mt-3 text-center">
+      <p class="text-sm text-gray-500">Amount to pay</p>
+      <p id="pAmt" class="text-4xl font-black text-gray-800 mt-1">&#8377;0</p>
+    </div>
+    <div class="glass p-4 mt-4">
+      <h3 class="font-bold text-gray-800 mb-2">Step 1: Pay</h3>
+      <p class="text-sm text-gray-600">Pay exactly this amount to the UPI ID: <span id="wUpi" class="font-mono bg-gray-100 px-2 py-0.5 rounded">Not set yet</span></p>
+      <img id="wQr" class="hide w-44 h-44 object-contain mx-auto mt-3 rounded-2xl bg-white" alt="Payment QR code">
+    </div>
+    <div class="glass p-4 mt-4">
+      <h3 class="font-bold text-gray-800 mb-2">Step 2: Enter UTR</h3>
+      <p class="text-xs text-gray-400 mb-3">After paying, enter the 12-digit UTR number from your UPI app.</p>
+      <input id="wUtr" type="text" inputmode="numeric" maxlength="12" placeholder="12-digit UTR number" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-3">
+      <button id="wSubmit" class="fluid-btn w-full py-3">I have paid</button>
+    </div>
+  </section>
+
+  <section id="v-paydone" class="hide">
+    <div class="glass p-8 mt-6 text-center">
+      <div class="fluid-btn mx-auto flex items-center justify-center text-white font-black text-4xl" style="width:72px;height:72px;border-radius:50%">&#10003;</div>
+      <h2 class="text-xl font-bold text-gray-800 mt-4">Payment submitted</h2>
+      <p id="pdAmt" class="text-2xl font-black gtext mt-1"></p>
+      <p class="text-sm text-gray-500 mt-3">Your balance will be added as soon as the payment is confirmed. You can see the status in History.</p>
+      <button id="pdWallet" class="fluid-btn w-full py-3 mt-5">Back to wallet</button>
+    </div>
+  </section>
+
+  <section id="v-history" class="hide">
+    <h2 class="font-bold text-lg text-gray-800 mt-4 mb-2">History</h2>
+    <div id="hTabs" class="flex gap-2 mb-3">
+      <button class="cat-chip on" data-h="dep">Deposits</button>
+      <button class="cat-chip" data-h="wd">Withdrawals</button>
+    </div>
+    <div id="hDep" class="glass p-4"><div id="wHist" class="space-y-2"></div></div>
+    <div id="hWd" class="hide glass p-4"><div id="wdHist" class="space-y-2"></div></div>
+  </section>
+
+  <section id="v-withdraw" class="hide">
+    <div class="glass p-6 mt-4 text-center">
+      <p class="text-sm text-gray-500">Available to withdraw</p>
+      <p id="wdBal" class="text-4xl font-black text-gray-800 mt-1">&#8377;0</p>
+    </div>
+    <div class="glass p-4 mt-4">
+      <h3 class="font-bold text-gray-800 mb-2">Withdraw</h3>
+      <p class="text-xs text-gray-400 mb-3">Minimum Rs 50. The amount is taken from your balance now.</p>
+      <div id="wdMethod" class="flex gap-2 mb-3">
+        <button class="cat-chip on" data-m="upi">UPI</button>
+        <button class="cat-chip" data-m="bank">Bank</button>
+      </div>
+      <input id="wdAmt" type="number" inputmode="numeric" placeholder="Amount (Rs)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+      <div id="wdUpiBox">
+        <input id="wdUpi" type="text" placeholder="Your UPI ID" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+      </div>
+      <div id="wdBankBox" class="hide">
+        <input id="wdBName" type="text" placeholder="Account holder name" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="wdBAcc" type="text" inputmode="numeric" placeholder="Account number" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="wdBIfsc" type="text" placeholder="IFSC code" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+      </div>
+      <button id="wdSubmit" class="fluid-btn w-full py-3 mt-1">Request withdrawal</button>
+    </div>
+  </section>
+
+  <section id="v-admin" class="hide">
+    <div id="adminLock" class="glass p-6 mt-4 text-center text-sm text-gray-500">
+      This page is only for admins.
+    </div>
+
+    <div id="adminPanel" class="hide">
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Notice and banner</h2>
+        <input id="aNotice" type="text" placeholder="Notice text" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="aBanner" type="url" placeholder="Banner image link (https://...)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="aUpi" type="text" placeholder="UPI ID for deposits" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="aQr" type="url" placeholder="Payment QR image link (https://...)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-3">
+        <button id="aSaveSet" class="fluid-btn w-full py-3">Update</button>
+      </div>
+
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Categories</h2>
+        <div id="adminCats" class="space-y-2 mb-3"></div>
+        <input id="aCat" type="text" placeholder="New category name" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <button id="aCatAdd" class="fluid-btn w-full py-3">Add category</button>
+      </div>
+
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Create match</h2>
+        <input id="mTitle" type="text" placeholder="Match title" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <select id="mFormat" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 bg-white"></select>
+        <p class="text-xs text-gray-400 mb-1 ml-1">Prize type</p>
+        <select id="mPType" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 bg-white">
+          <option value="fixed">Prize pool + per kill</option>
+          <option value="point">Point based (price per point)</option>
+        </select>
+        <p class="text-xs text-gray-400 mb-1 ml-1">Date (DD / MM / YYYY)</p>
+        <div class="flex gap-2 mb-2">
+          <select id="mDay" class="flex-1 border border-gray-200 rounded-2xl p-3 text-sm bg-white"></select>
+          <select id="mMonth" class="flex-[2] border border-gray-200 rounded-2xl p-3 text-sm bg-white"></select>
+          <select id="mYear" class="flex-1 border border-gray-200 rounded-2xl p-3 text-sm bg-white"></select>
+        </div>
+        <p class="text-xs text-gray-400 mb-1 ml-1">Time (HH : MM, 24 hour)</p>
+        <div class="flex gap-2 mb-2">
+          <select id="mHour" class="flex-1 border border-gray-200 rounded-2xl p-3 text-sm bg-white"></select>
+          <select id="mMin" class="flex-1 border border-gray-200 rounded-2xl p-3 text-sm bg-white"></select>
+        </div>
+        <input id="mPrize" type="number" inputmode="numeric" placeholder="Prize pool (Rs)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="mKill" type="number" inputmode="numeric" placeholder="Per kill bonus (Rs)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="mPoint" type="number" inputmode="numeric" placeholder="Price per point (Rs)" class="hide w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+        <input id="mEntry" type="number" inputmode="numeric" placeholder="Entry fee (Rs, 0 for free)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-3">
+        <textarea id="mRules" rows="3" placeholder="Match rules (optional, one per line)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2"></textarea>
+        <p class="text-xs text-gray-400 mb-1 ml-1">Match photo (optional)</p>
+        <input id="mImg" type="file" accept="image/*" class="w-full text-sm text-gray-500 mb-3">
+        <button id="mDeploy" class="fluid-btn w-full py-3">Create match</button>
+      </div>
+
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Pending deposits</h2>
+        <div id="adminDeps" class="space-y-2"></div>
+      </div>
+
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Pending withdrawals</h2>
+        <div id="adminWds" class="space-y-2"></div>
+      </div>
+
+      <div class="glass p-4 mt-4">
+        <h2 class="font-bold text-lg mb-3">Manage matches</h2>
+        <div id="adminMatchList" class="space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="v-profile" class="hide">
+    <div class="glass p-6 mt-4 text-center">
+      <img id="pAvatar" class="w-24 h-24 rounded-full mx-auto border-4 border-white shadow object-cover"
+           src="https://ui-avatars.com/api/?background=a855f7&color=fff&size=192&name=TD" alt="Profile photo">
+      <button id="pChange" class="fluid-btn px-5 py-2 text-sm mt-3">Change photo</button>
+      <p id="pMail" class="text-xs text-gray-400 mt-3">Not signed in</p>
+      <input id="pName" type="text" placeholder="Display name" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mt-3">
+      <button id="pSave" class="fluid-btn w-full py-3 mt-3">Save name</button>
+      <button id="pOut" class="glass w-full py-3 mt-3 font-semibold text-red-500">Sign out</button>
+    </div>
+  </section>
+
+</main>
+<input type="file" id="dpInput" accept="image/*" class="hide">
+
+<!-- BOTTOM NAV -->
+<nav class="fixed left-0 right-0 bottom-0 flex justify-around border-t border-white"
+     style="z-index:20;padding:6px 0 calc(6px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;box-shadow:0 -4px 24px rgba(80,40,160,.12);background:rgba(255,255,255,.65);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px)">
+  <button class="nav-btn on" data-v="home">
+    <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Home</button>
+  <button class="nav-btn" data-v="mymatches">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="12" rx="4"/><path d="M7 11v4M5 13h4"/><circle cx="16" cy="12" r="1"/><circle cx="18.5" cy="14.5" r="1"/></svg>Matches</button>
+  <button class="nav-btn" data-v="wallet">
+    <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18"/><circle cx="16.5" cy="15" r="1.2"/></svg>Wallet</button>
+  <button class="nav-btn" data-v="withdraw">
+    <svg viewBox="0 0 24 24"><path d="M12 17V4"/><path d="M6 10l6-6 6 6"/><path d="M5 21h14"/></svg>Withdraw</button>
+  <button id="navAdmin" class="nav-btn hide" data-v="admin">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Admin</button>
+  <button class="nav-btn" data-v="profile">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>Profile</button>
+</nav>
+
+<!-- FAIR PLAY MODAL -->
+<div id="fpModal" class="hide fixed inset-0 flex items-center justify-center p-4" style="z-index:50;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)">
+  <div class="glass max-w-sm w-full p-6 text-gray-800" style="background:rgba(255,255,255,.92)">
+    <h3 class="text-xl font-bold mb-3">Fair play rules</h3>
+    <ul class="text-sm space-y-2 list-disc pl-5">
+      <li>Hacks, mods and third-party tools are not allowed.</li>
+      <li>Emulators are not allowed.</li>
+      <li>Room ID and password unlock 10 minutes before the match.</li>
+      <li>Any violation leads to a permanent ban.</li>
+      <li>Entry fees are not refunded after the match starts.</li>
+    </ul>
+    <button id="fpClose" class="fluid-btn w-full py-3 mt-5">I agree</button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="hide fixed inset-0 flex items-center justify-center p-4" style="z-index:50;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)">
+  <div class="glass max-w-sm w-full p-6 text-gray-800" style="background:rgba(255,255,255,.92)">
+    <h3 id="lTitle" class="text-xl font-bold mb-3">Sign in</h3>
+    <input id="lName" type="text" placeholder="Your name" class="hide w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+    <input id="lEmail" type="email" placeholder="Email" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+    <input id="lPass" type="password" placeholder="Password (6+ characters)" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-4">
+    <div class="flex gap-2">
+      <button id="lCancel" class="glass flex-1 py-3 font-semibold text-gray-700">Cancel</button>
+      <button id="lGo" class="fluid-btn flex-1 py-3">Sign in</button>
+    </div>
+    <button id="lSwitch" class="w-full text-sm text-gray-500 mt-4">New here? Create account</button>
+  </div>
+</div>
+
+<!-- JOIN MODAL -->
+<div id="joinModal" class="hide fixed inset-0 flex items-center justify-center p-4" style="z-index:50;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)">
+  <div class="glass max-w-sm w-full p-6 text-gray-800" style="background:rgba(255,255,255,.92)">
+    <h3 id="jTitle" class="text-lg font-bold mb-1">Join match</h3>
+    <p id="jInfo" class="text-sm text-gray-500 mb-1"></p>
+    <p id="jBal" class="text-sm font-semibold text-gray-700 mb-3"></p>
+    <input id="jIgn" type="text" placeholder="Your Free Fire name" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-4">
+    <div class="flex gap-2">
+      <button id="jCancel" class="glass flex-1 py-3 font-semibold text-gray-700">Cancel</button>
+      <button id="jGo" class="fluid-btn flex-1 py-3">Join</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM MODAL (admin) -->
+<div id="roomModal" class="hide fixed inset-0 flex items-center justify-center p-4" style="z-index:50;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)">
+  <div class="glass max-w-sm w-full p-6 text-gray-800" style="background:rgba(255,255,255,.92)">
+    <h3 id="rTitle" class="text-lg font-bold mb-3">Room details</h3>
+    <input id="rId" type="text" placeholder="Room ID" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2">
+    <input id="rPass" type="text" placeholder="Room password" class="w-full border border-gray-200 rounded-2xl p-3 text-sm mb-2 mb-4">
+    <div class="flex gap-2">
+      <button id="rCancel" class="glass flex-1 py-3 font-semibold text-gray-700">Cancel</button>
+      <button id="rGo" class="fluid-btn flex-1 py-3">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hide"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, setDoc, collection, addDoc, deleteDoc, query, orderBy, where, increment, writeBatch, updateDoc, runTransaction, arrayUnion, getDoc, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDkwQvjVjrEQqpEIIgWKshbz538lGm7DL8",
+  authDomain: "td-esp.firebaseapp.com",
+  projectId: "td-esp",
+  storageBucket: "td-esp.firebasestorage.app",
+  messagingSenderId: "1074367636296",
+  appId: "1:1074367636296:web:65189df5578a98cbaa097d"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const g = id => document.getElementById(id);
+const VIEWS = ["home", "mymatches", "wallet", "pay", "paydone", "withdraw", "history", "admin", "profile", "detail"];
+function showView(v, navKey) {
+  VIEWS.forEach(x => g("v-" + x).classList.toggle("hide", x !== v));
+  document.querySelectorAll(".nav-btn").forEach(x => x.classList.toggle("on", x.dataset.v === navKey));
+  window.scrollTo(0, 0);
+}
+
+/* ---- Splash: 2.5 second baad fade ---- */
+setTimeout(() => {
+  g("splash").classList.add("fade");
+  setTimeout(() => g("splash").classList.add("hide"), 700);
+}, 2500);
+
+/* ---- Toast ---- */
+let toastTimer;
+function toast(msg) {
+  const t = g("toast");
+  t.textContent = msg;
+  t.classList.remove("hide");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add("hide"), 3000);
+}
+
+/* ---- Bottom nav ---- */
+document.querySelectorAll(".nav-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    VIEWS.forEach(v => g("v-" + v).classList.toggle("hide", v !== b.dataset.v));
+    document.querySelectorAll(".nav-btn").forEach(x => x.classList.toggle("on", x === b));
+    window.scrollTo(0, 0);
+  });
+});
+
+/* ---- Fair play popup ---- */
+g("fpOpen").addEventListener("click", () => g("fpModal").classList.remove("hide"));
+g("fpClose").addEventListener("click", () => g("fpModal").classList.add("hide"));
+
+/* ---- Login / Register ---- */
+let regMode = false;
+function setMode(reg) {
+  regMode = reg;
+  g("lTitle").textContent = reg ? "Create account" : "Sign in";
+  g("lGo").textContent = reg ? "Create account" : "Sign in";
+  g("lName").classList.toggle("hide", !reg);
+  g("lSwitch").textContent = reg ? "Already have an account? Sign in" : "New here? Create account";
+}
+g("lSwitch").addEventListener("click", () => setMode(!regMode));
+
+g("authBtn").addEventListener("click", async () => {
+  if (auth.currentUser) {
+    await signOut(auth);
+    toast("Signed out");
+  } else {
+    g("loginModal").classList.remove("hide");
+  }
+});
+g("lCancel").addEventListener("click", () => g("loginModal").classList.add("hide"));
+
+g("lGo").addEventListener("click", async () => {
+  const email = g("lEmail").value.trim();
+  const pass = g("lPass").value;
+  const name = g("lName").value.trim();
+  if (!email || !pass) { toast("Enter email and password"); return; }
+  if (regMode && !name) { toast("Enter your name"); return; }
+  if (regMode && pass.length < 6) { toast("Password needs 6 or more characters"); return; }
+  try {
+    if (regMode) {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      try {
+        await setDoc(doc(db, "users", cred.user.uid),
+          { name: name, email: email, balance: 0, role: "user", createdAt: Date.now() }, { merge: true });
+      } catch (e) { toast("Account created, but profile could not be saved"); }
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+    g("loginModal").classList.add("hide");
+    g("lPass").value = "";
+    toast(regMode ? "Account created" : "Signed in");
+  } catch (e) {
+    toast(regMode ? "Could not create account. The email may already be in use."
+                  : "Sign in failed. Check email and password.");
+  }
+});
+
+/* ---- Profile (users/{uid}) ---- */
+const DEFAULT_PIC = "https://ui-avatars.com/api/?background=a855f7&color=fff&size=192&name=TD";
+let profileUnsub = null;
+
+function paint(user, d) {
+  const name = d.name || user.displayName || user.email.split("@")[0];
+  const pic = d.photo ||
+    "https://ui-avatars.com/api/?background=a855f7&color=fff&size=192&name=" + encodeURIComponent(name);
+  g("pAvatar").src = pic;
+  g("pMail").textContent = user.email;
+  if (document.activeElement !== g("pName")) g("pName").value = name;
+  g("authBtn").classList.add("hide");
+  myBalance = Number(d.balance) || 0;
+  g("hBal").textContent = rupee(d.balance);
+  g("wBal").textContent = rupee(d.balance);
+  g("wdBal").textContent = rupee(d.balance);
+  joinedIds = Array.isArray(d.joined) ? d.joined : [];
+  renderMatches();
+  setAdmin(d.role === "admin");
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+  if (!user) {
+    g("pAvatar").src = DEFAULT_PIC;
+    g("pMail").textContent = "Not signed in";
+    g("pName").value = "";
+    g("authBtn").classList.remove("hide");
+    g("authBtn").textContent = "Sign in";
+    myBalance = 0;
+    g("hBal").textContent = rupee(0);
+    setAdmin(false);
+    g("wBal").textContent = rupee(0);
+    g("wdBal").textContent = rupee(0);
+    joinedIds = [];
+    renderMatches();
+    startWallet(null);
+    return;
+  }
+  paint(user, {});
+  startWallet(user);
+  profileUnsub = onSnapshot(doc(db, "users", user.uid),
+    (s) => paint(user, s.exists() ? s.data() : {}),
+    () => {});
+});
+
+/* ---- Photo badalna (FileReader) ---- */
+function pickDp() {
+  if (!auth.currentUser) { toast("Sign in first"); return; }
+  g("dpInput").click();
+}
+g("pAvatar").addEventListener("click", pickDp);
+g("pChange").addEventListener("click", pickDp);
+
+g("dpInput").addEventListener("change", () => {
+  const file = g("dpInput").files[0];
+  g("dpInput").value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = async () => {
+      const size = 256;
+      const c = document.createElement("canvas");
+      c.width = size; c.height = size;
+      const s = Math.min(img.width, img.height);
+      c.getContext("2d").drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+      const url = c.toDataURL("image/jpeg", 0.8);
+      try {
+        await setDoc(doc(db, "users", auth.currentUser.uid), { photo: url }, { merge: true });
+        toast("Photo updated");
+      } catch (e) { toast("Photo could not be saved"); }
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---- Naam save ---- */
+g("pSave").addEventListener("click", async () => {
+  if (!auth.currentUser) { toast("Sign in first"); return; }
+  const n = g("pName").value.trim();
+  if (!n) { toast("Enter a name"); return; }
+  try {
+    await setDoc(doc(db, "users", auth.currentUser.uid), { name: n }, { merge: true });
+    toast("Name saved");
+  } catch (e) { toast("Name could not be saved"); }
+});
+
+/* ---- Admin on/off (users/{uid}.role == "admin") ---- */
+function setAdmin(flag) {
+  watchPending(flag);
+  watchPendingWd(flag);
+  g("navAdmin").classList.toggle("hide", !flag);
+  g("adminPanel").classList.toggle("hide", !flag);
+  g("adminLock").classList.toggle("hide", flag);
+  if (!flag && !g("v-admin").classList.contains("hide")) {
+    document.querySelector('.nav-btn[data-v="home"]').click();
+  }
+}
+
+/* ---- Matches (collection: tournaments) ---- */
+const rupee = n => "\u20B9" + (Number(n) || 0);
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function stat(label, value) {
+  const b = el("div", "flex-1 text-center py-2 rounded-2xl bg-gray-50");
+  b.appendChild(el("p", "text-xs text-gray-400", label));
+  b.appendChild(el("p", "font-bold text-gray-800 text-sm", value));
+  return b;
+}
+
+let myBalance = 0;
+function parseDT(t) {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4}) - (\d{2}):(\d{2})$/.exec(t || "");
+  return m ? new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5]).getTime() : 9e15;
+}
+let matchesCache = [];
+let joinedIds = [];
+let joinTarget = null;
+let roomTarget = null;
+let catFilter = "ALL";
+let detailMatch = null;
+const DEFAULT_CATS = ["SOLO", "DUO", "SQUAD", "CHAMPION RUSH"];
+const crLast = arr => arr.filter(c => c !== "CHAMPION RUSH").concat(arr.filter(c => c === "CHAMPION RUSH"));
+const DEFAULT_RULES = "1. No hacks, mods or third-party tools.\n2. Emulators are not allowed.\n3. Be in the room 10 minutes before the match.\n4. Any violation leads to a permanent ban.\n5. Entry fees are not refunded after the match starts.";
+let cats = DEFAULT_CATS.slice();
+let catDocs = [];
+const GRADIENT = "linear-gradient(135deg,#a855f7,#3b82f6,#ec4899)";
+
+/* ---- Categories (collection: categories) ---- */
+function renderCats() {
+  const row = g("catRow");
+  row.innerHTML = "";
+  if (!cats.includes(catFilter)) catFilter = cats[0];
+  cats.forEach(c => {
+    const b = el("button", "cat-chip" + (c === catFilter ? " on" : ""), c);
+    b.addEventListener("click", () => { catFilter = c; renderCats(); renderMatches(); });
+    row.appendChild(b);
+  });
+  const sel = g("mFormat");
+  const cur = sel.value;
+  sel.innerHTML = "";
+  cats.forEach(c => { const o = el("option", "", c); o.value = c; sel.appendChild(o); });
+  if (cats.includes(cur)) sel.value = cur;
+  const box = g("adminCats");
+  box.innerHTML = "";
+  if (!catDocs.length) box.appendChild(el("p", "text-xs text-gray-400", "These are the default categories. Add your own below to manage them."));
+  catDocs.forEach(c => {
+    const r = el("div", "flex items-center justify-between p-3 rounded-2xl bg-gray-50");
+    r.appendChild(el("p", "font-semibold text-sm text-gray-800", c.name));
+    const del = el("button", "glass px-3 py-2 text-xs font-semibold text-red-500", "Delete");
+    del.addEventListener("click", async () => {
+      if (!confirm("Delete this category?")) return;
+      try { await deleteDoc(doc(db, "categories", c.id)); toast("Category deleted"); }
+      catch (e) { toast("Delete failed: " + (e.code || "error")); }
+    });
+    r.appendChild(del);
+    box.appendChild(r);
+  });
+}
+renderCats();
+onSnapshot(query(collection(db, "categories"), orderBy("createdAt", "asc")), (snap) => {
+  catDocs = [];
+  snap.forEach(d => catDocs.push({ id: d.id, name: d.data().name }));
+  cats = crLast(catDocs.length ? catDocs.map(c => c.name) : DEFAULT_CATS.slice());
+  renderCats();
+  renderMatches();
+}, () => { renderCats(); });
+
+g("aCatAdd").addEventListener("click", async () => {
+  const name = g("aCat").value.trim().toUpperCase();
+  if (!name) { toast("Enter a category name"); return; }
+  if (cats.includes(name)) { toast("This category already exists"); return; }
+  try {
+    let t = Date.now();
+    if (!catDocs.length) {
+      for (const d of DEFAULT_CATS) await addDoc(collection(db, "categories"), { name: d, createdAt: t++ });
+    }
+    await addDoc(collection(db, "categories"), { name: name, createdAt: t });
+    g("aCat").value = "";
+    toast("Category added");
+  } catch (e) { toast("Could not add: " + (e.code || "error")); }
+});
+
+g("mPType").addEventListener("change", () => {
+  const pt = g("mPType").value === "point";
+  g("mPrize").classList.toggle("hide", pt);
+  g("mKill").classList.toggle("hide", pt);
+  g("mPoint").classList.toggle("hide", !pt);
+});
+
+/* ---- My Matches + match detail ---- */
+function renderMyMatches() {
+  const box = g("myList");
+  box.innerHTML = "";
+  const mine = matchesCache.filter(m => joinedIds.includes(m.id));
+  g("noMine").classList.toggle("hide", mine.length > 0);
+  mine.forEach(m => {
+    const card = el("button", "glass overflow-hidden w-full text-left block");
+    if (m.image) {
+      const im = el("img", "w-full h-28 object-cover");
+      im.src = m.image;
+      im.alt = m.title || "Match";
+      card.appendChild(im);
+    } else {
+      const ph = el("div", "w-full h-28 flex items-center justify-center text-white font-black text-xl", m.format || "MATCH");
+      ph.style.background = GRADIENT;
+      card.appendChild(ph);
+    }
+    const b = el("div", "p-4");
+    b.appendChild(el("p", "font-bold text-gray-800", m.title || "Match"));
+    b.appendChild(el("p", "text-xs text-gray-400 mt-1", (m.format || "") + " - " + (m.dateTime || "")));
+    b.appendChild(el("p", "text-sm font-semibold mt-2 gtext", "Tap for room ID, players and rules"));
+    card.appendChild(b);
+    card.addEventListener("click", () => openDetail(m));
+    box.appendChild(card);
+  });
+}
+
+function openDetail(m) {
+  detailMatch = m;
+  showView("detail", "mymatches");
+  g("dTitle").textContent = m.title || "Match";
+  g("dMeta").textContent = (m.format || "") + " - " + (m.dateTime || "");
+  g("dImg").classList.toggle("hide", !m.image);
+  if (m.image) g("dImg").src = m.image;
+  g("dRoom").textContent = "Loading...";
+  getDoc(doc(db, "rooms", m.id)).then(r => {
+    g("dRoom").textContent = r.exists()
+      ? "Room ID: " + r.data().roomId + "\nPassword: " + r.data().roomPass
+      : "Room ID and password will be added before the match.";
+  }).catch(() => { g("dRoom").textContent = "Could not load room details."; });
+  showDetailTab("prize");
+}
+g("dBack").addEventListener("click", () => document.querySelector('.nav-btn[data-v="mymatches"]').click());
+document.querySelectorAll("#dTabs .cat-chip").forEach(b => b.addEventListener("click", () => showDetailTab(b.dataset.t)));
+
+async function showDetailTab(t) {
+  const m = detailMatch;
+  if (!m) return;
+  document.querySelectorAll("#dTabs .cat-chip").forEach(x => x.classList.toggle("on", x.dataset.t === t));
+  const body = g("dBody");
+  body.innerHTML = "";
+  body.style.whiteSpace = t === "rules" ? "pre-line" : "normal";
+  if (t === "prize") {
+    const row = el("div", "flex gap-2 mb-3");
+    if (m.prizeType === "point") row.appendChild(stat("Per point", rupee(m.perPoint)));
+    else {
+      row.appendChild(stat("Prize pool", rupee(m.prize)));
+      row.appendChild(stat("Per kill", rupee(m.perKill)));
+    }
+    row.appendChild(stat("Entry", Number(m.entryFee) > 0 ? rupee(m.entryFee) : "Free"));
+    body.appendChild(row);
+    body.appendChild(el("p", "", m.prizeType === "point"
+      ? "Your prize = your total points x " + rupee(m.perPoint) + ". Points are added by the admin after the match."
+      : "The per kill bonus is paid for every kill you get."));
+  } else if (t === "players") {
+    body.textContent = "Loading players...";
+    try {
+      const snap = await getDocs(collection(db, "tournaments", m.id, "players"));
+      body.innerHTML = "";
+      body.appendChild(el("p", "font-bold mb-2", snap.size + (snap.size === 1 ? " player joined" : " players joined")));
+      let i = 0;
+      snap.forEach(d => { i++; body.appendChild(el("p", "py-1 border-b border-gray-100", i + ". " + (d.data().ign || "Player"))); });
+    } catch (e) { body.textContent = "Players could not be loaded."; }
+  } else {
+    body.textContent = m.rules || DEFAULT_RULES;
+  }
+}
+
+onSnapshot(query(collection(db, "tournaments"), orderBy("createdAt", "desc")), (snap) => {
+  const list = [];
+  snap.forEach(d => list.push(Object.assign({ id: d.id }, d.data())));
+  list.sort((a, b) => parseDT(a.dateTime) - parseDT(b.dateTime));
+  matchesCache = list;
+  renderMatches();
+}, () => {
+  g("noMatch").textContent = "Matches could not be loaded.";
+  g("noMatch").classList.remove("hide");
+});
+
+/* ---- Join match ---- */
+function openJoin(m) {
+  if (!auth.currentUser) { toast("Sign in first"); return; }
+  joinTarget = m;
+  g("jTitle").textContent = m.title || "Join match";
+  g("jInfo").textContent = Number(m.entryFee) > 0
+    ? "Entry fee " + rupee(m.entryFee) + " will be taken from your wallet."
+    : "This match is free.";
+  g("jBal").textContent = "Your balance: " + rupee(myBalance);
+  g("jIgn").value = "";
+  g("joinModal").classList.remove("hide");
+}
+g("jCancel").addEventListener("click", () => g("joinModal").classList.add("hide"));
+g("jGo").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  const m = joinTarget;
+  const ign = g("jIgn").value.trim();
+  if (!user || !m) return;
+  if (ign.length < 2) { toast("Enter your Free Fire name"); return; }
+  const fee = Number(m.entryFee) || 0;
+  g("jGo").disabled = true;
+  try {
+    await runTransaction(db, async (tx) => {
+      const uref = doc(db, "users", user.uid);
+      const us = await tx.get(uref);
+      const u = us.exists() ? us.data() : {};
+      const bal = Number(u.balance) || 0;
+      if ((u.joined || []).includes(m.id)) throw new Error("already");
+      if (bal < fee) throw new Error("balance");
+      tx.set(uref, { balance: bal - fee, joined: arrayUnion(m.id) }, { merge: true });
+      tx.set(doc(db, "tournaments", m.id, "players", user.uid),
+        { uid: user.uid, ign: ign, joinedAt: Date.now() });
+    });
+    g("joinModal").classList.add("hide");
+    toast("Joined. Open the Matches tab for room details.");
+  } catch (e) {
+    toast(e.message === "balance" ? "Not enough balance. Add money in Wallet."
+        : e.message === "already" ? "You already joined this match"
+        : "Could not join: " + (e.code || "error"));
+  }
+  g("jGo").disabled = false;
+});
+
+/* ---- Admin: room id + password ---- */
+g("rCancel").addEventListener("click", () => g("roomModal").classList.add("hide"));
+g("rGo").addEventListener("click", async () => {
+  const id = g("rId").value.trim();
+  const pw = g("rPass").value.trim();
+  if (!roomTarget || !id || !pw) { toast("Enter room ID and password"); return; }
+  try {
+    await setDoc(doc(db, "rooms", roomTarget.id), { roomId: id, roomPass: pw, updatedAt: Date.now() });
+    g("roomModal").classList.add("hide");
+    toast("Room details saved");
+  } catch (e) { toast("Could not save: " + (e.code || "error")); }
+});
+
+/* ---- Admin: notice, banner, UPI, QR ---- */
+g("aSaveSet").addEventListener("click", async () => {
+  const data = {};
+  const notice = g("aNotice").value.trim();
+  const bannerUrl = g("aBanner").value.trim();
+  const upiId = g("aUpi").value.trim();
+  const qrUrl = g("aQr").value.trim();
+  if (notice) data.notice = notice;
+  if (bannerUrl) data.bannerUrl = bannerUrl;
+  if (upiId) data.upiId = upiId;
+  if (qrUrl) data.qrUrl = qrUrl;
+  if (!Object.keys(data).length) { toast("Fill at least one box"); return; }
+  try {
+    await setDoc(doc(db, "settings", "app"), data, { merge: true });
+    ["aNotice", "aBanner", "aUpi", "aQr"].forEach(id => { g(id).value = ""; });
+    toast("Updated");
+  } catch (e) { toast("Update failed. Admin only."); }
+});
+
+/* ---- Wallet: histories ---- */
+let mineUnsubs = [];
+function watchMine(coll, user, box, emptyText) {
+  return onSnapshot(query(collection(db, coll), where("uid", "==", user.uid)), (snap) => {
+    const list = [];
+    snap.forEach(d => list.push(Object.assign({ id: d.id }, d.data())));
+    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    box.innerHTML = "";
+    if (!list.length) { box.appendChild(el("p", "text-sm text-gray-400 text-center py-3", emptyText)); return; }
+    list.forEach(x => {
+      const row = el("div", "flex items-center justify-between p-3 rounded-2xl bg-gray-50");
+      const left = el("div");
+      left.appendChild(el("p", "font-semibold text-sm text-gray-800", rupee(x.amount)));
+      left.appendChild(el("p", "text-xs text-gray-400", x.utr ? "UTR " + x.utr : x.method === "bank" ? "Bank ****" + String(x.bankAcc || "").slice(-4) : "UPI " + x.upi));
+      const good = x.status === "approved" || x.status === "paid";
+      const label = x.status === "approved" ? "Approved" : x.status === "paid" ? "Paid"
+                  : x.status === "rejected" ? "Rejected" : "Pending";
+      row.appendChild(left);
+      row.appendChild(el("span", "text-xs font-bold " + (good ? "text-green-600" : x.status === "rejected" ? "text-red-500" : "text-amber-500"), label));
+      box.appendChild(row);
+    });
+  }, () => {
+    box.innerHTML = "";
+    box.appendChild(el("p", "text-sm text-gray-400 text-center py-3", "Could not be loaded."));
+  });
+}
+function startWallet(user) {
+  mineUnsubs.forEach(u => u());
+  mineUnsubs = [];
+  g("wHist").innerHTML = "";
+  g("wdHist").innerHTML = "";
+  if (!user) {
+    g("wHist").appendChild(el("p", "text-sm text-gray-400 text-center py-3", "Sign in to see your deposits."));
+    g("wdHist").appendChild(el("p", "text-sm text-gray-400 text-center py-3", "Sign in to see your withdrawals."));
+    return;
+  }
+  mineUnsubs.push(watchMine("deposits", user, g("wHist"), "No deposits yet."));
+  mineUnsubs.push(watchMine("withdrawals", user, g("wdHist"), "No withdrawals yet."));
+}
+
+let wdMethod = "upi";
+document.querySelectorAll("#wdMethod .cat-chip").forEach(b => b.addEventListener("click", () => {
+  wdMethod = b.dataset.m;
+  document.querySelectorAll("#wdMethod .cat-chip").forEach(x => x.classList.toggle("on", x === b));
+  g("wdUpiBox").classList.toggle("hide", wdMethod !== "upi");
+  g("wdBankBox").classList.toggle("hide", wdMethod !== "bank");
+}));
+
+g("wdSubmit").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) { toast("Sign in first"); return; }
+  const amount = Number(g("wdAmt").value);
+  if (!Number.isInteger(amount) || amount < 50) { toast("Minimum withdrawal is Rs 50"); return; }
+  const extra = {};
+  if (wdMethod === "upi") {
+    const upi = g("wdUpi").value.trim();
+    if (!/^[\w.\-]{2,}@[\w]{2,}$/.test(upi)) { toast("Enter a valid UPI ID"); return; }
+    extra.method = "upi";
+    extra.upi = upi;
+  } else {
+    const bn = g("wdBName").value.trim();
+    const ba = g("wdBAcc").value.trim();
+    const bi = g("wdBIfsc").value.trim().toUpperCase();
+    if (bn.length < 2) { toast("Enter the account holder name"); return; }
+    if (!/^\d{9,18}$/.test(ba)) { toast("Enter a valid account number"); return; }
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bi)) { toast("Enter a valid IFSC code"); return; }
+    extra.method = "bank";
+    extra.bankName = bn;
+    extra.bankAcc = ba;
+    extra.ifsc = bi;
+  }
+  try {
+    await runTransaction(db, async (tx) => {
+      const uref = doc(db, "users", user.uid);
+      const us = await tx.get(uref);
+      const bal = Number(us.exists() ? us.data().balance : 0) || 0;
+      if (bal < amount) throw new Error("balance");
+      tx.set(uref, { balance: bal - amount }, { merge: true });
+      tx.set(doc(collection(db, "withdrawals")),
+        Object.assign({ uid: user.uid, email: user.email, amount: amount, status: "pending", createdAt: Date.now() }, extra));
+    });
+    ["wdAmt", "wdUpi", "wdBName", "wdBAcc", "wdBIfsc"].forEach(id => { g(id).value = ""; });
+    toast("Withdrawal requested. See History.");
+  } catch (e) {
+    toast(e.message === "balance" ? "Not enough balance" : "Could not request: " + (e.code || "error"));
+  }
+});
+
+let payAmount = 0;
+g("wNext").addEventListener("click", () => {
+  if (!auth.currentUser) { toast("Sign in first"); return; }
+  const a = Number(g("wAmt").value);
+  if (!Number.isInteger(a) || a < 10) { toast("Minimum deposit is Rs 10"); return; }
+  payAmount = a;
+  g("pAmt").textContent = rupee(a);
+  g("wUtr").value = "";
+  showView("pay", "wallet");
+});
+g("payBack").addEventListener("click", () => showView("wallet", "wallet"));
+g("pdWallet").addEventListener("click", () => showView("wallet", "wallet"));
+
+/* ---- Header: balance + history, sign out ---- */
+g("balChip").addEventListener("click", () => showView("wallet", "wallet"));
+g("histBtn").addEventListener("click", () => {
+  if (!auth.currentUser) { toast("Sign in first"); return; }
+  showView("history", "");
+});
+document.querySelectorAll("#hTabs .cat-chip").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("#hTabs .cat-chip").forEach(x => x.classList.toggle("on", x === b));
+  g("hDep").classList.toggle("hide", b.dataset.h !== "dep");
+  g("hWd").classList.toggle("hide", b.dataset.h !== "wd");
+}));
+g("pOut").addEventListener("click", async () => { await signOut(auth); toast("Signed out"); });
+
+g("wSubmit").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) { toast("Sign in first"); return; }
+  const amount = payAmount;
+  const utr = g("wUtr").value.trim();
+  if (!Number.isInteger(amount) || amount < 10) { toast("Minimum deposit is Rs 10"); return; }
+  if (!/^\d{12}$/.test(utr)) { toast("UTR must be 12 digits"); return; }
+  try {
+    await setDoc(doc(db, "deposits", utr),
+      { uid: user.uid, email: user.email, amount: amount, utr: utr, status: "pending", createdAt: Date.now() });
+    g("wAmt").value = "";
+    g("wUtr").value = "";
+    g("pdAmt").textContent = rupee(amount);
+    showView("paydone", "wallet");
+  } catch (e) { toast("Could not submit. This UTR may already be used. (" + (e.code || "error") + ")"); }
+});
+
+/* ---- Admin: pending deposits ---- */
+let pendUnsub = null;
+function watchPending(on) {
+  if (!on) {
+    if (pendUnsub) { pendUnsub(); pendUnsub = null; }
+    g("adminDeps").innerHTML = "";
+    return;
+  }
+  if (pendUnsub) return;
+  pendUnsub = onSnapshot(query(collection(db, "deposits"), where("status", "==", "pending")), (snap) => {
+    const box = g("adminDeps");
+    box.innerHTML = "";
+    const list = [];
+    snap.forEach(d => list.push(Object.assign({ id: d.id }, d.data())));
+    list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (!list.length) { box.appendChild(el("p", "text-sm text-gray-400 text-center py-3", "No pending deposits.")); return; }
+    list.forEach(x => {
+      const row = el("div", "p-3 rounded-2xl bg-gray-50");
+      row.appendChild(el("p", "font-semibold text-sm text-gray-800", rupee(x.amount) + " - " + (x.email || "")));
+      row.appendChild(el("p", "text-xs text-gray-400 mb-2", "UTR " + x.utr));
+      const btns = el("div", "flex gap-2");
+      const rej = el("button", "glass flex-1 py-2 text-sm font-semibold text-red-500", "Reject");
+      const ok = el("button", "fluid-btn flex-1 py-2 text-sm", "Approve");
+      ok.addEventListener("click", async () => {
+        ok.disabled = true;
+        try {
+          const b = writeBatch(db);
+          b.update(doc(db, "users", x.uid), { balance: increment(x.amount) });
+          b.update(doc(db, "deposits", x.id), { status: "approved", approvedAt: Date.now() });
+          await b.commit();
+          toast("Approved");
+        } catch (e) { ok.disabled = false; toast("Approve failed: " + (e.code || "error")); }
+      });
+      rej.addEventListener("click", async () => {
+        try { await updateDoc(doc(db, "deposits", x.id), { status: "rejected" }); toast("Rejected"); }
+        catch (e) { toast("Reject failed: " + (e.code || "error")); }
+      });
+      btns.appendChild(rej);
+      btns.appendChild(ok);
+      row.appendChild(btns);
+      box.appendChild(row);
+    });
+  }, () => {});
+}
+
+/* ---- Photo ko chhota karke text mein badalna ---- */
+function fileToDataUrl(file, w, h) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onerror = reject;
+    r.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const sc = Math.max(w / img.width, h / img.height);
+        const dw = img.width * sc, dh = img.height * sc;
+        c.getContext("2d").drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        resolve(c.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+/* ---- Admin: create match ---- */
+const pad = n => String(n).padStart(2, "0");
+function fillSelect(id, items) {
+  items.forEach(it => {
+    const o = document.createElement("option");
+    o.value = it[0];
+    o.textContent = it[1];
+    g(id).appendChild(o);
+  });
+}
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July",
+                "August", "September", "October", "November", "December"];
+const nowD = new Date();
+fillSelect("mDay", Array.from({ length: 31 }, (_, i) => [i + 1, pad(i + 1)]));
+fillSelect("mMonth", MONTHS.map((m, i) => [i + 1, m]));
+fillSelect("mYear", [0, 1, 2].map(i => [nowD.getFullYear() + i, String(nowD.getFullYear() + i)]));
+fillSelect("mHour", Array.from({ length: 24 }, (_, i) => [i, pad(i)]));
+fillSelect("mMin", Array.from({ length: 12 }, (_, i) => [i * 5, pad(i * 5)]));
+g("mDay").value = nowD.getDate();
+g("mMonth").value = nowD.getMonth() + 1;
+g("mHour").value = 19;
+
+g("mDeploy").addEventListener("click", async () => {
+  const title = g("mTitle").value.trim();
+  const prize = Number(g("mPrize").value || 0);
+  const perKill = Number(g("mKill").value || 0);
+  const entryFee = Number(g("mEntry").value || 0);
+  const ptype = g("mPType").value;
+  const perPoint = Number(g("mPoint").value || 0);
+  const rules = g("mRules").value.trim();
+  if (!title) { toast("Enter a match title"); return; }
+  if (ptype === "point" && perPoint <= 0) { toast("Enter the price per point"); return; }
+  const dd = Number(g("mDay").value), mm = Number(g("mMonth").value), yy = Number(g("mYear").value);
+  if (new Date(yy, mm - 1, dd).getMonth() !== mm - 1) { toast("This date does not exist"); return; }
+  const dateTime = pad(dd) + "/" + pad(mm) + "/" + yy + " - " + pad(Number(g("mHour").value)) + ":" + pad(Number(g("mMin").value));
+  if (prize < 0 || perKill < 0 || entryFee < 0) { toast("Amounts cannot be negative"); return; }
+  let image = "";
+  const pf = g("mImg").files[0];
+  if (pf) {
+    try { image = await fileToDataUrl(pf, 640, 320); }
+    catch (e) { toast("Could not read the photo"); return; }
+  }
+  try {
+    await addDoc(collection(db, "tournaments"), {
+      title: title, format: g("mFormat").value, dateTime: dateTime,
+      prize: prize, perKill: perKill, entryFee: entryFee, image: image,
+      prizeType: ptype, perPoint: perPoint, rules: rules,
+      status: "open", createdAt: Date.now()
+    });
+    ["mTitle", "mPrize", "mKill", "mPoint", "mEntry", "mRules", "mImg"].forEach(id => { g(id).value = ""; });
+    toast("Match created");
+  } catch (e) { toast("Could not create match: " + (e.code || "error")); }
+});
+
+/* ---- Admin: pending withdrawals ---- */
+let pendWdUnsub = null;
+function watchPendingWd(on) {
+  if (!on) {
+    if (pendWdUnsub) { pendWdUnsub(); pendWdUnsub = null; }
+    g("adminWds").innerHTML = "";
+    return;
+  }
+  if (pendWdUnsub) return;
+  pendWdUnsub = onSnapshot(query(collection(db, "withdrawals"), where("status", "==", "pending")), (snap) => {
+    const box = g("adminWds");
+    box.innerHTML = "";
+    const list = [];
+    snap.forEach(d => list.push(Object.assign({ id: d.id }, d.data())));
+    list.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    if (!list.length) { box.appendChild(el("p", "text-sm text-gray-400 text-center py-3", "No pending withdrawals.")); return; }
+    list.forEach(x => {
+      const row = el("div", "p-3 rounded-2xl bg-gray-50");
+      row.appendChild(el("p", "font-semibold text-sm text-gray-800", rupee(x.amount) + " - " + (x.email || "")));
+      row.appendChild(el("p", "text-xs text-gray-500 mb-2", x.method === "bank" ? "Bank: " + x.bankName + ", A/C " + x.bankAcc + ", IFSC " + x.ifsc : "Pay to UPI: " + x.upi));
+      const btns = el("div", "flex gap-2");
+      const rej = el("button", "glass flex-1 py-2 text-sm font-semibold text-red-500", "Reject and refund");
+      const paid = el("button", "fluid-btn flex-1 py-2 text-sm", "Mark paid");
+      paid.addEventListener("click", async () => {
+        try { await updateDoc(doc(db, "withdrawals", x.id), { status: "paid", paidAt: Date.now() }); toast("Marked paid"); }
+        catch (e) { toast("Failed: " + (e.code || "error")); }
+      });
+      rej.addEventListener("click", async () => {
+        try {
+          const b = writeBatch(db);
+          b.update(doc(db, "users", x.uid), { balance: increment(x.amount) });
+          b.update(doc(db, "withdrawals", x.id), { status: "rejected" });
+          await b.commit();
+          toast("Rejected and refunded");
+        } catch (e) { toast("Failed: " + (e.code || "error")); }
+      });
+      btns.appendChild(rej);
+      btns.appendChild(paid);
+      row.appendChild(btns);
+      box.appendChild(row);
+    });
+  }, () => {});
+}
+
+/* ---- Live notice + hero banner (Firestore: settings/app) ---- */
+onSnapshot(doc(db, "settings", "app"), (snap) => {
+  if (!snap.exists()) return;
+  const d = snap.data();
+  if (d.notice) g("notice").textContent = d.notice;
+  if (d.bannerUrl) g("hero").src = d.bannerUrl;
+  if (d.upiId) g("wUpi").textContent = d.upiId;
+  if (d.qrUrl) { g("wQr").src = d.qrUrl; g("wQr").classList.remove("hide"); }
+}, () => { /* settings abhi nahi bani, default text dikhega */ });
+</script>
+</body>
+</html>
